@@ -7,7 +7,7 @@
 
 int main(){
     int x_res=1500;
-	int y_res=400;
+    int y_res=400;
     
     std::unordered_map<int, std::any> test;
 
@@ -20,13 +20,13 @@ int main(){
     int moveY=0;
     float zoom=10.0f;
 
-	int st_pikslov=y_res*x_res+y_res;
+    int st_pikslov=y_res*x_res+y_res;
     char original[st_pikslov];
  
     float fakt=1.0f;
     float fakt2=1.0f;
 
-	renderanje::projekcija::pocistiZaslon();
+    renderanje::projekcija::pocistiZaslon();
     memset(original, ' ', sizeof(original));
     objekt+=(nalagalnik::nalaganjeTock::naloziOBB("C:\\Users..."));
     objekt+=(nalagalnik::nalaganjeTock::naloziOBB("C:\\Users..."));
@@ -39,12 +39,11 @@ int main(){
             stanje.x(-10.0f);
         }
         else if (GetAsyncKeyState (0x57)){
-			stanje.y(10.0f);
-		}
-		else if (GetAsyncKeyState (0x53)){
-		    stanje.y(-10.0f);
-		}
-
+		stanje.y(10.0f);
+	}
+	else if (GetAsyncKeyState (0x53)){
+		stanje.y(-10.0f);
+	}
         else if (GetAsyncKeyState(84)&0x8000){
             stanje.z(0.1f);
         }

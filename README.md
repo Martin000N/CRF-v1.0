@@ -1,5 +1,5 @@
 # terminal-rendering-framework
-Working on a software rendering framework for graphics in the terminal. (EXTREMELY EARLY STAGE)
+Working on a software rendering framework for graphics in the terminal. (EXTREMELY EARLY STAGE).
 Uses rasterization.
 
 This is a **single-header library**. If you want to try the example program, you can compile it with 

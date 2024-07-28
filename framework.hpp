@@ -1,42 +1,29 @@
 #include <windows.h>
-#include <any>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <string>
 #include <math.h>
-#include <omp.h>
 
 namespace statusIgre{
     class igra{
     private:
-        int statusIgre;
-        float xSmer, ySmer, zSmer, te3, te2;
-        int x_res, y_res;
+        int statusIgre, x_res, y_res;
+        float xSmer, ySmer, zSmer;
     public:
         // Privzeta konstruktorja.
-        igra():statusIgre(1), x_res(100), y_res(100), xSmer(0.0f), ySmer(0.0f), zSmer(1.0f), te3(0.0f), te2(0.0f){}
-        igra(int statusIgre, int x_res, int y_res, float xSmer, float ySmer, float zSmer, float te3):statusIgre(statusIgre), x_res(x_res), y_res(y_res), xSmer(xSmer), ySmer(ySmer), zSmer(zSmer), te3(te3), te2(te2){} 
+        igra():statusIgre(1), x_res(100), y_res(100), xSmer(0.0f), ySmer(0.0f), zSmer(1.0f){}
+        igra(int statusIgre, int x_res, int y_res, float xSmer, float ySmer, float zSmer, float te3):statusIgre(statusIgre), x_res(x_res), y_res(y_res), xSmer(xSmer), ySmer(ySmer), zSmer(zSmer){} 
     
     public:
         // Ni permanentno, samo za debugganje. Na koncu bo cistejsa koda.
         //==============================================================
-        int getx(){return x_res;}
-        int gety(){return y_res;}
+        int xDimenzija(){return x_res;}
+        int yDimenzija(){return y_res;}
 
         float getzs(){return zSmer;}
         float getxs(){return xSmer;}
         float getys(){return ySmer;}
-
-        float gz(){return te3;}
-        float gz2(){return te2;}
-
-        void x(float s){xSmer+=s;}
-        void y(float s){ySmer+=s;}
-        void gzs(float s){te3+=s;}
-        void gzs2(float s){te2+=s;}
-
-        void z(float s){zSmer+=s;}
 
         //==============================================================
         // Ni permanentno, samo za debugganje. Na koncu bo cistejsa koda.
@@ -51,14 +38,16 @@ namespace statusIgre{
         // Negira status igre (0->1/1->0).
         void negirajStatus(){this->statusIgre=(this->statusIgre?0:1);}
     };
-    
 }
 
 namespace branjeInputa{
     class input{
     public:
-        static void preverjanjeInputa(statusIgre::igra* stanje, std::unordered_map<int, std::any>* funkcijeZaPremikeIgralca, std::unordered_map<int, std::any>* funkcijeZaPremikePogleda){
-            // Pregleda vse tipke.
+        static void preverjanjeInputa(statusIgre::igra* stanje/*, std::unordered_map<int, std::any>* funkcijeZaPremikeIgralca, std::unordered_map<int, std::any>* funkcijeZaPremikePogleda*/){
+
+            // Del naslednje posodobitve.
+            //==================================================================================================
+            /*// Pregleda vse tipke.
             for (int tipka=0; tipka<256; ++tipka){
                 SHORT stanjeTipke=GetAsyncKeyState(tipka);
 
@@ -72,42 +61,75 @@ namespace branjeInputa{
                     }
                 }
         
-            }
+            }*/
+            //===================================================================================================
+            // Del naslednje posodobitve.
 
-            // Escape.
-            if (GetAsyncKeyState(27)&0x8000) {
-                stanje->negirajStatus();
+            // ESC
+            if (GetAsyncKeyState(27)&0x8000){
+
+            }
+            // A
+            else if (GetAsyncKeyState(65)&0x8000){
+
+            }
+            // D
+            else if (GetAsyncKeyState(68)&0x8000){
+
+            }
+            // W
+            else if (GetAsyncKeyState(87)&0x8000){
+
+            }
+            // S
+            else if (GetAsyncKeyState(83)&0x8000){
+
+            }
+            // T
+            else if (GetAsyncKeyState(84)&0x8000){
+
+            }
+            // R
+            else if (GetAsyncKeyState(82)&0x8000){
+
+            }
+            // E
+            else if(GetAsyncKeyState(69)&0x8000){
+
+            }
+            // Q
+            else if(GetAsyncKeyState(81)&0x8000){
+
             }
         }
     };
 }
 
-/*
-    class kvaternion {
+namespace transformacije{
+    class kvaternioni{
     private:
         float w, x, y, z;
     public:
-        kvaternion(float kot, float vx, float vy, float vz) {
+        kvaternioni(float kot, float xKomponenta, float yKomponenta, float zKomponenta) {
             w=cos(kot/2.0f);
-            float sinpolovicniKot=sin(kot/2.0f);
-            x=vx*sinpolovicniKot;
-            y=vy*sinpolovicniKot;
-            z=vz*sinpolovicniKot;
+            float sinPolovicniKot=sin(kot/2.0f);
+            x=xKomponenta*sinPolovicniKot;
+            y=yKomponenta*sinPolovicniKot;
+            z=zKomponenta*sinPolovicniKot;
         }
 
-        kvaternion operator*(const kvaternion& q) const {return kvaternion(w*q.w-x*q.x-y*q.y-z*q.z,w*q.x+x*q.w+y*q.z-z*q.y,w*q.y-x*q.z+y*q.w+z*q.x,w*q.z+x*q.y-y*q.x+z*q.w);}
+        kvaternioni operator*(const kvaternioni& kvaternion) const {return kvaternioni(w*kvaternion.w-x*kvaternion.x-y*kvaternion.y-z*kvaternion.z,w*kvaternion.x+x*kvaternion.w+y*kvaternion.z-z*kvaternion.y,w*kvaternion.y-x*kvaternion.z+y*kvaternion.w+z*kvaternion.x,w*kvaternion.z+x*kvaternion.y-y*kvaternion.x+z*kvaternion.w);}
 
-        static kvaternion konjugiraj(kvaternion kv) {
-            return kvaternion(kv.w, -kv.x, -kv.y, -kv.z);
+        static kvaternioni konjugiraj(kvaternioni kvaternion) {return kvaternioni(kvaternion.w, -kvaternion.x, -kvaternion.y, -kvaternion.z);}
+
+        // Kvaternion p se rotira okoli osi kvaterniona. q*p*q^-1.
+        static primitivi::tocka3D rotate(kvaternioni kvaternion, primitivi::tocka3D tocka) {
+            kvaternioni p(0, tocka.pridobiX(), tocka.pridobiY(), tocka.pridobiZ());
+            kvaternioni rezultat=(kvaternion)*p*konjugiraj(kvaternion);
+            return primitivi::tocka3D(rezultat.x, rezultat.y, rezultat.z);
         }
-
-        static tocka3D rotate(kvaternion kv, float vx, float vy, float& vz) {
-            kvaternion p(0, vx, vy, vz);
-            kvaternion result=(kv)*p*konjugiraj(kv);
-            return tocka3D(result.x, result.y, result.z);
-        }
-    };*/
-
+    };
+}
 
 namespace primitivi{
     
@@ -205,6 +227,56 @@ namespace primitivi{
 }
 
 namespace renderanje{
+    class bufferArray{
+        private:
+            int x, y;
+            char* buffer;
+        public:
+            bufferArray(int x, int y):x(x), y(y) {
+                buffer=new char[x*y+y];
+            }
+
+
+            // Metoda buffera.
+            char& operator[] (size_t idx) {return buffer[idx];}
+
+        public:
+    
+            char* pridobiBuffer() const {return buffer;}
+            size_t velikost() const {return x*y+y;}
+    };
+
+    class zBufferArray{
+        private:
+            int x, y;
+            float* buffer;
+        public:
+            zBufferArray(int x, int y):x(x), y(y) {
+                buffer=new float[x*y+y];
+            }
+            // Metoda buffera.
+            float& operator[] (size_t idx) {return buffer[idx];}
+
+        public:
+
+            size_t velikost() const {return x*y+y;}
+    };
+    
+    
+    class bufferArrayMemset{
+    public:
+        static void bufferMemsetC(bufferArray& buffer, char znak, size_t maxVelikost){
+            for (size_t idx=0; idx<maxVelikost; ++idx){
+                buffer[idx]=znak;
+            }
+        }
+        static void bufferMemsetI(zBufferArray& buffer, float znak, size_t maxVelikost){
+            for (size_t idx=0; idx<maxVelikost; ++idx){
+                buffer[idx]=znak;
+            }
+        }
+    };
+
     class projekcija{
 
     public:
@@ -213,29 +285,37 @@ namespace renderanje{
 
         static void pocistiZaslon() {printf("\x1b[d");}
 
-        static void prikaz(primitivi::objekti& vektorObjektov, statusIgre::igra& status, char* buffer){
-            for (size_t idy=0;idy<=status.gety();idy++){
-                buffer[idy*status.getx()]='\n';
-            }
+        static void prikaz(primitivi::objekti& vektorObjektov, statusIgre::igra& status, renderanje::bufferArray& buffer, renderanje::zBufferArray& zBuffer){
+
+
             int x, y;
+            int sirina=status.xDimenzija();
+            int visina=status.yDimenzija();
+            bufferArrayMemset::bufferMemsetC(buffer, ' ', buffer.velikost());
+            bufferArrayMemset::bufferMemsetI(zBuffer, 1000.0f, buffer.velikost());
+
+
+            for (size_t idy=0;idy<=visina;idy++){
+                buffer[idy*sirina]='\n';
+            }
 
             for (auto& model:vektorObjektov){
                 for (auto& ploskev:model){
                     for (auto& tocka:ploskev){
-                        primitivi::tocka3D temp=tocka;
 
-                        x=round(tocka.pridobiX()*status.getzs()*2+status.getxs())+90;
-                        y=round(tocka.pridobiY()*status.getzs()+status.getys())+200;
 
-                        if (0<=x && x<status.getx() && 0<=y && y<status.gety()){
-                            buffer[(status.getx())*y+x]='*';
+                        x=round(tocka.pridobiX());
+                        y=round(tocka.pridobiY());
 
+                        if (x>=0&&x<sirina&&y>=0&&y<visina&&tocka.pridobiZ()>0&&tocka.pridobiZ()<zBuffer[y*sirina+x]) {
+                            zBuffer[y*sirina+x]=tocka.pridobiZ();
+                            buffer[y*sirina+x]='*';
                         }
                     }
                 }
             }
-            puts(buffer);
 
+            puts(buffer.pridobiBuffer());
         }
     };
 }
@@ -283,6 +363,7 @@ namespace nalagalnik{
                     ploskve+=ploskev;
                 }
             }
+
             return ploskve;
         }
     };

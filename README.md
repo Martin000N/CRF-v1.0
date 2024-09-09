@@ -1,7 +1,7 @@
-# terminal-rendering-framework
-Working on a software rendering framework for graphics in the terminal. (EXTREMELY EARLY STAGE).
-Uses rasterization.
+(SLO)
+RENDERING KNJIŽNICA ZA CPU RENDERANJE V C++. Deluje le single-threaded. Trenutno še ni zelo uporabna/učinkovita, jo pa bom sproti izpopolnjeval.
 
+(ENG)
 This is a **single-header library**. If you want to try the example program, you can compile it with 
 
     "g++ -IPathToInclude example.cpp"

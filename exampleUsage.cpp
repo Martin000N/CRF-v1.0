@@ -1,29 +1,34 @@
 #include <vector>
-#include "test.hpp"
-#include <windows.h>
+#include "CRF.hpp"
+#include <iostream>
 
 int main(){
-    int x_res=1500;
-	int y_res=400;
-
-    statusIgre::igra stanje;
-    stanje.dolociResolucijo(x_res, y_res);
-
-    primitivi::objekti objekt;
+    int x_res=500;
+    int y_res=100;
+    
+    statusIgre::igra status;
+    status.dolociResolucijo(x_res, y_res);
 
     renderanje::bufferArray buffer(x_res, y_res);
     renderanje::zBufferArray zBuffer(x_res, y_res);
 
-    objekt+=(nalagalnik::nalaganjeTock::naloziOBB("C:\\Users\\marti\\Desktop\\scene\\scene.obj"));
-    objekt+=(nalagalnik::nalaganjeTock::naloziOBB("C:\\Users\\marti\\Desktop\\www\\scene.obj"));
+    renderanje::projekcija::hardResetZaslon(status, buffer, zBuffer);
+    std::vector<primitivi::model> origMod;
+    std::vector<primitivi::model> temp;
 
-    renderanje::projekcija::hardResetZaslon();
+    origMod.emplace_back(nalagalnik::nalaganjeTock::naloziOBB("C:\\Users\\user\\Desktop\\raster\\obj\\textures\\test.obj"));
 
-    while (stanje.pridobiStatus()){
+    while (status.pridobiStatus()){
 
-        renderanje::projekcija::pocistiZaslon();
-        renderanje::projekcija::prikaz(objekt, stanje, buffer, zBuffer);
-        branjeInputa::input::preverjanjeInputa(&stanje);
+        renderanje::projekcija::pocistiZaslon(status, buffer, zBuffer);
         
-    } 
+        branjeInputa::input::preverjanjeInputa(status, origMod);
+        temp=origMod;
+        rasterizacija::transofrmacije::clip(origMod, status);
+        rasterizacija::transofrmacije::projekcijskaMat(temp);
+
+        renderanje::renderanjePrimitiv::renderObjektov(temp, buffer, zBuffer, status);
+        puts(buffer.pridobiBuffer());
+    }
+   return 0;
 }

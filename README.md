@@ -26,7 +26,7 @@ Trenutno se vsi modeli (tudi če obstaja samo en) naložijo v std::vector<primit
 
         "renderanje::projekcija::hardResetZaslon(status, buffer);"
 
-3. V glavnem loop-u se uporabijo naslednje funkcije v določenem vrstem redu. Njihova funkcija je trivijalna in je ne bom razlagal. Obenem ja vsaka izmed teh komentar, ki jo razloži ali pa je popolnoma samoumevna:
+3. V glavnem loop-u se uporabijo naslednje funkcije v določenem vrstem redu. Njihova funkcija je trivijalna in je ne bom razlagal. Obenem ja vsaka izmed teh komentirana na način, ki jo popolnoma razloži ali pa je samoumevna:
 
        "renderanje::projekcija::pocistiZaslon(status, buffer);
         

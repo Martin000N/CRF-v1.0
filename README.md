@@ -10,13 +10,13 @@ CRF (CPU Rendering Framework) KNJIZNICA V C++. Deluje le single-threaded in je *
 
 Uporaba knjižnice.
 
-Trenutno se vsi modeli (tudi če obstaja samo en) naložijo v std::vector<primitivi::model>. Tega ne urejamo in na njem lahko samo izvajamo modelove transformacije.
+Trenutno se vsi modeli (tudi če obstaja samo en) naložijo v std::vector<primitivi::model>. Tega se ne ureja in na njem lahko samo izvajajo modelove transformacije.
 
-1. V main funkciji ustvarimo 3 objekte (statusIgre::igra status, renderanje::bufferArray buffer(x_res, y_res), std::vector<primitivi::objekt>) in nato v tazadnjega naložimo vse modele na nasledni način:
+1. V main funkciji se ustvarijo 3 objekti (statusIgre::igra status, renderanje::bufferArray buffer(x_res, y_res), std::vector<primitivi::objekt>), nato v zadnjega naloži vse modele na naslednji način:
 
         "origMod.emplace_back(nalagalnik::nalaganjeTock::naloziOBJ("C:\\Users\\marti\\Desktop\\raster\\obj\\wooden watch tower2.obj"));"
    
-2. Pred glavnim while loopom še uporabimo;
+2. Pred glavnim while loopom se še uporabi;
 
         "renderanje::projekcija::hardResetZaslon(status, buffer);"
 

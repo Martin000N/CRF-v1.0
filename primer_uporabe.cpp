@@ -4,7 +4,7 @@
 
 int main(){
     int x_res=200;
-	int y_res=100;
+    int y_res=100;
     
     statusIgre::igra status(1, x_res, y_res, M_PI/6);
 

@@ -2,9 +2,9 @@
 CRF (CPU Rendering Framework) KNJIZNICA V C++. Deluje le single-threaded in je **single-header library**.
 **Delujoče funkcije:**
 
-    1.  wireframe rendering,
+    1. wireframe rendering,
     
-    2.  clippanje n-kotnikov (za linije še bom dodal),
+    2. clippanje n-kotnikov (za linije še bom dodal),
     
     3. izris n-kotnikov,
     

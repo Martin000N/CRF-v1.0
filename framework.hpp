@@ -3,320 +3,291 @@
 #include <fstream>
 #include <sstream>
 #include <cstring>
+#include <vector>
 #include <windows.h>
-
-#define epsilon 0.3f
 
 namespace statusIgre{
     class igra{
+        private:
+            int potekIgre, x_res, y_res;
+            float FOVx2, zPloskve;
+
+        private:
+            static float izracunZPloskve(int x_res, float FOVx2){return (x_res/2)/(2*tan(FOVx2));}
 
         public:
-            // Privzeta konstruktorja.
-            igra():potekIgre(1), x_res(100), y_res(100), xSmer(0), ySmer(0), zSmer(0){}
-            igra(int statusIgre, int x_res, int y_res):potekIgre(potekIgre), x_res(x_res), y_res(y_res), xSmer(xSmer), ySmer(ySmer), zSmer(zSmer){} 
+        
+            // FOVx2 je polovica FOV v x smeri (v radianih).
+            igra(): potekIgre(1), x_res(100), y_res(100), FOVx2(45.0f) {zPloskve=izracunZPloskve(x_res, FOVx2);}
+            // FOVx2 je polovica FOV v x smeri (v radianih).
+            igra(int statusIgre, int x_res, int y_res, float FOVx2): potekIgre(potekIgre), x_res(x_res), y_res(y_res), FOVx2(FOVx2){zPloskve=izracunZPloskve(x_res, FOVx2);} 
         
         public:
 
-            int pridobiX(){return x_res;}
-            int pridobiY(){return y_res;}
+            int resolucijaX() const {return x_res;}
+            int resolucijaY() const {return y_res;}
+
             // Dolocevanje resolucije (100x100 default).
-            void dolociResolucijo(int x, int y){x_res=x; y_res=y;}
+            void dolociResolucijo(int x, int y) {x_res=x; y_res=y;}
 
-            // Vrne status igre.
-            int pridobiStatus() const {return potekIgre;}
+            // Negira status igre (0->1/1->0). Uporabno za izstop iz while loop-a.
+            void negirajStatus() {potekIgre=(potekIgre?0:1);}
 
-            // Negira status igre (0->1/1->0).
-            void negirajStatus(){potekIgre=(potekIgre?0:1);}
+            int status() const {return potekIgre;}
 
-            float getzs(){return zSmer;}
-            float getxs(){return xSmer;}
-            float getys(){return ySmer;}
+            float FOV() const {return FOVx2;}
 
-            void xSmerS(float s){xSmer+=s;}
-            void ySmerS(float s){ySmer+=s;}
-            void zSmerS(float s){zSmer+=s;}
-        private:
-            int potekIgre, x_res, y_res;
-            float xSmer, ySmer, zSmer;
+            float ZP(){return zPloskve;}
     };
 }
 
 namespace primitivi{
     
-    class tocka3D{
-        public:
-            tocka3D():x(0), y(0), z(0){}
-            tocka3D(float x, float y, float z):x(x), y(y), z(z){}
-            void operator+= (const tocka3D& tocka) {x+=tocka.x; y+=tocka.y; z+=tocka.z;}
-
-        public:
-            // Navadne funkije za obdelovanje posameznih atributov.
-            float pridobiX() const {return x;}
-            float pridobiY() const {return y;}
-            float pridobiZ() const {return z;}
-
-            void spremeniX(float x) {this->x=x;}
-            void spremeniY(float y) {this->y=y;}
-            void spremeniZ(float z) {this->z=z;}
-
-            void spremeniKoordinate(tocka3D tocka) {(*this)=tocka;}
-
-            // dodal bom kvaternione.
-            tocka3D rotX(float faktor) {return tocka3D(this->x, this->y*cos(faktor)-this->z*sin(faktor), this->y*sin(faktor)+this->z*cos(faktor));}
-            tocka3D rotY(float faktor) {return tocka3D(this->x*cos(faktor)+this->z*sin(faktor), this->y, -this->x*sin(faktor)+this->z*cos(faktor));}
-            tocka3D rotZ(float faktor) {return tocka3D(this->x*cos(faktor)-this->y*sin(faktor), this->x*sin(faktor)+this->y*cos(faktor), this->z);}
+    // Struct točke v 3 dimenzijah.
+    struct tocka3D {
         
-        private:
-            float x, y, z;};
+        float x, y, z;
+        
+        tocka3D(): x(0), y(0), z(0) {}
+        tocka3D(float x, float y, float z): x(x), y(y), z(z) {}
 
+        tocka3D operator+ (tocka3D& tocka) {return tocka3D(x+tocka.x, y+tocka.y, z+tocka.z);}
+        tocka3D operator- (tocka3D& tocka) {return tocka3D(x-tocka.x, y-tocka.y, z-tocka.z);}
+        
+    };
+
+    // Večinoma se uporablja kot način shranjevanja ploskev.
     class vektorTock3D{
         private:
-            std::vector<tocka3D> tocke;
+            std::vector<primitivi::tocka3D> tocke;
 
         public:
+
             vektorTock3D()=default;
+
             tocka3D operator[] (const size_t idx) const {return tocke[idx];}
-            void operator+=(const tocka3D tocka) {tocke.emplace_back(tocka);}
-            std::vector<tocka3D>::iterator begin() {return tocke.begin();}
-            std::vector<tocka3D>::iterator end() {return tocke.end();}
+            void operator+= (const tocka3D tocka) {tocke.emplace_back(tocka);}
+
+            std::vector<primitivi::tocka3D>::iterator begin() {return tocke.begin();}
+            std::vector<primitivi::tocka3D>::iterator end() {return tocke.end();}
 
         public:
-            // Pocisti tocke.
+
             void pocistiTocke() {tocke.clear();}
-            std::vector<tocka3D> pridobiTocke() const {return tocke;}
+
+            std::vector<primitivi::tocka3D> pridobiTocke() const {return tocke;}
+
             size_t pridobiN() const {return tocke.size();}
     };
 
-    class model{
+    // Shranjevanje ploskev ==> objekt.
+    class objekt{
         private:
-            std::vector<vektorTock3D> ploskevModela;
+            std::vector<vektorTock3D> ploskevobjekta;
 
         public:
-            void operator+=(vektorTock3D ploskev) {ploskevModela.emplace_back(ploskev);}
+            void operator+=(vektorTock3D ploskev) {ploskevobjekta.emplace_back(ploskev);}
 
-            // Uporablja se za iteriranje v for loopih.
-            std::vector<vektorTock3D>::iterator begin() {return ploskevModela.begin();}
-            std::vector<vektorTock3D>::iterator end() {return ploskevModela.end();}
+            std::vector<vektorTock3D>::iterator begin() {return ploskevobjekta.begin();}
+            std::vector<vektorTock3D>::iterator end() {return ploskevobjekta.end();}
     };
 }
 
 namespace renderanje{
 
     class bufferArray{
-
-        public:
-            bufferArray(int x, int y):x(x), y(y) {buffer=new char[x*y+y];}
-            char& operator[] (size_t idx) {return buffer[idx];}
-            ~bufferArray(){for(int i=0; i<y; ++i){delete[] buffer;}}
-
-        public:
-            char* pridobiBuffer() const {return buffer;}
-            size_t velikost() const {return x*y+y;}
-            void bufferMemset(char znak){
-                for (size_t idx=0; idx<x*y+y; ++idx){
-                    this->buffer[idx]=znak;
-                }
-                //memset(buffer, znak, sizeof(buffer));
-            }
-        
         private:
             int x, y;
             char* buffer;
-    };
-    
-/*
-================================================
-Zbuffer array je int*, zato ne bo točen.
-================================================
-*/
-    class zBufferArray{
 
         public:
-            zBufferArray(int x, int y):x(x), y(y) {buffer=new int[x*y+y];}
-            int& operator[] (size_t idx) {return buffer[idx];}
-            ~zBufferArray(){for(int i=0; i<y; ++i){delete[] buffer;}}
+            // Ustvari array char-ov z dimenzijama (x, y). Uporablja tudi destructor zaradi "new char[...]".
+            bufferArray(int x, int y):x(x), y(y) {buffer=new char[x*y+y];}
+            ~bufferArray() {delete[] buffer;}
+
+            char& operator[] (size_t idx) const {return buffer[idx];}
 
         public:
+
+            char* pridobiBuffer() const {return buffer;}
+
             size_t velikost() const {return x*y+y;}
-            void zBufferMemset(int znak){
-                memset(buffer, znak, sizeof(buffer));
-            }
 
-        private:
-            int x, y;
-            int* buffer;
+            void bufferMemset(char znak){memset(this->buffer, znak, velikost());}
+
+            void postaviPiksel (char znak, int x, int y, int sirina, int visina){
+                if (x>=-(sirina/2)&&y>=-(visina/2)&&x<(sirina/2)&&y<(visina/2)){
+                    buffer[(y+visina/2)*(sirina+1)+(x+sirina/2)]='*';
+                }
+            }
     };
-/*
-================================================
-Zbuffer array je int*, zato ne bo točen.
-================================================
-*/
 
     class renderanjePrimitiv{
         public:
-            static void renderPloskev(primitivi::vektorTock3D& ploskev, renderanje::bufferArray& buffer, renderanje::zBufferArray& zBuffer, statusIgre::igra& status){
-                for (size_t index=0; index<ploskev.pridobiN(); ++index){
-                    if (!(ploskev[index%ploskev.pridobiN()].pridobiZ()<0||ploskev[(index+1)%ploskev.pridobiN()].pridobiZ()<0)){
-                        float X1=(ploskev[index%ploskev.pridobiN()].pridobiX()), 
-                        Y1=(ploskev[index%ploskev.pridobiN()].pridobiY()), 
-                        X2=(ploskev[(index+1)%ploskev.pridobiN()].pridobiX()),  
-                        Y2=(ploskev[(index+1)%ploskev.pridobiN()].pridobiY());
 
-                        renderLinij(
-                            X1,
-                            Y1,
-                            X2,
-                            Y2,
-                            buffer,
-                            zBuffer,
-                            status);
-                    }
-                }
-            }
-
-            // Brensenhamov algoritem z int-i.
-            static void renderLinij(int x0, int y0, int x1, int y1, renderanje::bufferArray& buffer, renderanje::zBufferArray& zBuffer, statusIgre::igra& status){
+            // Brensenhamov algoritem z int-i. (Koordinate z 0 in 1 sta začetna in končna točka).
+            static void renderLinij(int x0, int y0, int x1, int y1, renderanje::bufferArray& buffer, int sirina, int visina){
 
                 int dx=abs(x1-x0),sx=x0<x1?1:-1;
                 int dy=-abs(y1-y0),sy=y0<y1?1:-1; 
                 int err=dx+dy, e2;
-                
-                int sirina=status.pridobiX();
-                int visina=status.pridobiY();
 
                 for(;;){
-                    if (x0>=-(sirina/2)&&y0>=-(visina/2)&&x0<(sirina/2)&&y0<(visina/2)){
-                        buffer[(visina-(y0+visina/2))*(sirina+1)+(x0+sirina/2)+((visina-(y0+visina/2))==0?0:1)]='*';
-                    }
+                    buffer.postaviPiksel('.', x0, y0, sirina, visina);
                     if(x0==x1&&y0==y1)break;
                     e2=2*err;
                     (e2>=dy)?(err+=dy,x0+=sx):(err+=dx,y0+=sy);
                 }
             }
 
-            static void renderObjektov(std::vector<primitivi::model>& vektorObjektov, renderanje::bufferArray& buffer, renderanje::zBufferArray& zBuffer, statusIgre::igra& status){
+            // Rendera ploskev (vektorTock3D).
+            static void renderPloskve(primitivi::vektorTock3D& ploskev, renderanje::bufferArray& buffer, int sirina, int visina){
+                for (size_t index=0; index<ploskev.pridobiN(); ++index){
+                    float X1=-(ploskev[index%ploskev.pridobiN()].x),
+                    Y1=-(ploskev[index%ploskev.pridobiN()].y),
+                    X2=-(ploskev[(index+1)%ploskev.pridobiN()].x), 
+                    Y2=-(ploskev[(index+1)%ploskev.pridobiN()].y);
 
-                for (auto& model:vektorObjektov){
-                    for (auto& ploskev:model){
-                        renderanje::renderanjePrimitiv::renderPloskev(ploskev, buffer, zBuffer, status);
+                    renderLinij(X1,Y1,X2,Y2,buffer,sirina,visina);
+                }
+            }
+
+            // Gre skozi vektor objektov. Sirina in visina se pridobi iz statusa.
+            static void renderObjektov(std::vector<primitivi::objekt>& vektorObjektov, renderanje::bufferArray& buffer, statusIgre::igra& status){
+                int sirina=status.resolucijaX();
+                int visina=status.resolucijaY();
+
+                for (primitivi::objekt& objekt:vektorObjektov){
+                    for (primitivi::vektorTock3D& ploskev:objekt){
+                        renderanje::renderanjePrimitiv::renderPloskve(ploskev, buffer, sirina, visina);
                     }
                 }
-            }           
+            }
 
-
+            // Uporaba za debugganje. Ni še dokončana funkcija.
+            static void debugRenderObjektov(std::vector<primitivi::objekt>& vektorObjektov, renderanje::bufferArray& buffer, statusIgre::igra& status){
+                for (primitivi::objekt& objekt:vektorObjektov){
+                    for (primitivi::vektorTock3D& ploskev:objekt){
+                        printf("BO ŠE DODANO!");
+                    }
+                }
+            }
     };
 
     class projekcija{
 
-    public:
-        // Uporabi samo na zacetku, da zbriše začetni tekst, če obstaja.
-        static void hardResetZaslon(statusIgre::igra& status, renderanje::bufferArray& buffer, renderanje::zBufferArray& zBuffer){
-            buffer.bufferMemset('.');
-            zBuffer.zBufferMemset(10000000);
+        private:
+            static void vstaviNewline(int visina, int sirina, renderanje::bufferArray& buffer) {for (size_t idy=0;idy<visina;++idy){buffer[(idy+1)*(sirina+1)-1]='\n';}}
 
-            printf("\033[1;1H\033[2J");
+        public:
+            // Uporabi samo na zacetku, da zbriše začetni tekst, če obstaja.
+            static void hardResetZaslon(statusIgre::igra& status, renderanje::bufferArray& buffer){
+                buffer.bufferMemset(' ');
 
-            vstaviNewline(status.pridobiX(), status.pridobiX(), buffer);
-        }
+                printf("\033[1;1H\033[2J");
 
-        // Premakne cursor na (1,1). Je hitrejše of hardResetZaslon().
-        static void pocistiZaslon(statusIgre::igra& status, renderanje::bufferArray& buffer, renderanje::zBufferArray& zBuffer){
-            buffer.bufferMemset(' ');
-            zBuffer.zBufferMemset(10000000);
-
-            printf("\033[1;1H");
-
-            vstaviNewline(status.pridobiX(), status.pridobiX(), buffer);
-        }
-
-        static void vstaviNewline(int visina, int sirina, renderanje::bufferArray& buffer){
-            for (size_t idy=1;idy<=visina;++idy){
-                buffer[idy*(sirina+1)]='\n';
-
+                vstaviNewline(status.resolucijaY(), status.resolucijaX(), buffer);
             }
-        }
+
+            // Premakne cursor na (1,1). Je hitrejše of hardResetZaslon().
+            static void pocistiZaslon(statusIgre::igra& status, renderanje::bufferArray& buffer){
+                buffer.bufferMemset(' ');
+
+                printf("\033[1;1H");
+
+                vstaviNewline(status.resolucijaY(), status.resolucijaX(), buffer);
+            }
     };
 }
 
-namespace rasterizacija{
-    class transofrmacije{
-        public:
-            static void premik(std::vector<primitivi::model>& modeli, primitivi::tocka3D vektorPremika){
-                for (primitivi::model& model:modeli){
-                    for (primitivi::vektorTock3D& ploskve:model){
-                        for (primitivi::tocka3D& tocka:ploskve){
-                            tocka+=vektorPremika;
-                        }
-                    }
-                }
-                
-            }
-
-            static void clip(std::vector<primitivi::model>& modeli, statusIgre::igra& status){
-                for (primitivi::model& model:modeli){
-                    for (primitivi::vektorTock3D& ploskev:model){
-                        for (size_t index=0; index<ploskev.pridobiN(); ++index){
-                            primitivi::tocka3D T1=ploskev[index%ploskev.pridobiN()];
-                            primitivi::tocka3D T2=ploskev[(index+1)%ploskev.pridobiN()];        
-
-                            if (T1.pridobiZ()<0&&T2.pridobiZ()<0){
-                                 continue;
-                            } else if (T1.pridobiZ()<0){
-                                Presecisce test=iskanjePresecisca(status, T1, T2);
-                                T1.spremeniX(test.x);
-                                T1.spremeniX(test.y);
-                                T1.spremeniZ(0.1f);
-
-                            } else if (T2.pridobiZ()<0){
-                                Presecisce test=iskanjePresecisca(status, T2, T1);
-                                T2.spremeniX(test.x);
-                                T2.spremeniX(test.y);
-                                T2.spremeniZ(0.1f);
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            static void projekcijskaMat(std::vector<primitivi::model>& modeli){
-                float zc=9.0f;
-                for (primitivi::model& model:modeli){
-                    for (primitivi::vektorTock3D& ploskve:model){
-                        for (primitivi::tocka3D& tocka:ploskve){
-                            float tx=tocka.pridobiX();
-                            float ty=tocka.pridobiY();
-                            float tz=(abs(tocka.pridobiZ())<epsilon)?0.1f:tocka.pridobiZ();
-                            //printf("%f, %f, %f, %f, %f, %f\n", (tx*zc/tz), (ty*zc/tz), tx, ty, tz);
-                            tocka = primitivi::tocka3D((tx*zc/tz), (ty*zc/tz), tz);
-                        }
-                    }
-                }
-            }
+namespace transformacije{
+    class clippanje{
 
         private:
             struct Presecisce{
-                float x;
-                float y;
+                float x, y;
             }; 
 
-            static Presecisce iskanjePresecisca(statusIgre::igra& status, primitivi::tocka3D T1, primitivi::tocka3D T2){
-                float tx1=T1.pridobiX(), 
-                ty1=T1.pridobiY(), 
-                tz1=T1.pridobiZ(), 
-                tx2=T2.pridobiX(), 
-                ty2=T2.pridobiY(), 
-                tz2=T2.pridobiZ();
-                if (abs(tx2-tx1)<epsilon||abs(ty2-ty1)<epsilon||abs(tz2-tz1)<epsilon){
-                    //printf("%f, %f,%f, %f\n",ty1, ty2, tx1, tx2);
-                    return (Presecisce){tx1, ty1};
-                } else{
-                    int x_res=status.pridobiX(), y_res=status.pridobiY();
-                    float k=(-tz1)/(tz2-tz1);
-                    float x=(tx1+k*(tx2-tx1)), y=(ty1+k*(ty2-ty1));
-                    //printf("drug: %f, %f\n", x,y);
-                    return (Presecisce){x, y};
-                }                  
+        private:
+            static Presecisce izracunPresecisca(primitivi::tocka3D& T1, primitivi::tocka3D& T2, float zPloskve){
+                float deltaX=T2.x-T1.x;
+                float deltaY=T2.y-T1.y;
+                float deltaZ=T2.z-T1.z;
+ 
+                return (Presecisce){((zPloskve-T2.z)/deltaZ)*deltaX+T2.x, ((zPloskve-T2.z)/deltaZ)*deltaY+T2.y};
+            }
+
+        public:
+            // Kliči *za* transformacijo loadanih modelov (premiki, rotacije...) in *pred* projekcijsko transformacijo.
+            static std::vector<primitivi::objekt> clipLinij(std::vector<primitivi::objekt>& vektorObjektov, statusIgre::igra& status){
+                std::vector<primitivi::objekt> objektiZaReturn;
+                int sirina=status.resolucijaX(), visina=status.resolucijaY();
+
+                Presecisce tempTockaPresecisca;
+                float ZP = 10.0f;//status.ZP();
+                for (primitivi::objekt& objekt:vektorObjektov){
+
+                    primitivi::objekt tempObjekt;
+                    for (primitivi::vektorTock3D& ploskev:objekt){
+
+                        primitivi::vektorTock3D ploskevTemp;
+                        for (size_t index=0; index<ploskev.pridobiN(); ++index){
+                            
+                            primitivi::tocka3D T1=ploskev[index%ploskev.pridobiN()];
+                            primitivi::tocka3D T2=ploskev[(index+1)%ploskev.pridobiN()];        
+
+                            if (T1.z>=ZP&&T2.z>=ZP){
+                                ploskevTemp+=T1;
+                                ploskevTemp+=T2;
+                            } else if (T1.z>=ZP&&T2.z<ZP){
+                                tempTockaPresecisca=izracunPresecisca(T2, T1, ZP);
+                                ploskevTemp+=primitivi::tocka3D(tempTockaPresecisca.x, tempTockaPresecisca.y, ZP);
+                            } else if (T1.z<ZP&&T2.z>=ZP){
+                                tempTockaPresecisca=izracunPresecisca(T1, T2, ZP);
+                                ploskevTemp+=primitivi::tocka3D(tempTockaPresecisca.x, tempTockaPresecisca.y, ZP);
+                            }
+                        }
+                        tempObjekt+=ploskevTemp;
+                    }
+                    objektiZaReturn.emplace_back(tempObjekt);
+                }
+                
+                return objektiZaReturn;
+            }
+    };
+
+    class projekcijskaTransformacija{
+        private:
+
+        public:
+            static void izracunProjekcije(std::vector<primitivi::objekt>& vektorObjektov, statusIgre::igra& status){
+                float z=status.ZP();
+                for (primitivi::objekt& objekt:vektorObjektov){
+                    for (primitivi::vektorTock3D& ploskev:objekt){
+                        for (primitivi::tocka3D& tocka:ploskev){
+                            float tx=tocka.x;
+                            float ty=tocka.y;
+                            float tz=tocka.z;
+                            tocka=primitivi::tocka3D((tx*z/tz), (ty*z/tz), tz);
+                        }
+                    }
+                }
+            }
+    };
+
+    class premik{
+        public:
+            static void prem(std::vector<primitivi::objekt>& vektorObjektov, primitivi::tocka3D vektor){
+
+                for (primitivi::objekt& objekt:vektorObjektov){
+                    for (primitivi::vektorTock3D& ploskev:objekt){
+                        for (primitivi::tocka3D& tocka:ploskev){
+                            tocka.x+=vektor.x;
+                            tocka.y+=vektor.y;
+                            tocka.z+=vektor.z;
+                        }
+                    }
+                }
             }
     };
 }
@@ -324,119 +295,91 @@ namespace rasterizacija{
 namespace branjeInputa{
     class input{
     public:
-        static void preverjanjeInputa(statusIgre::igra& status, std::vector<primitivi::model>& testT/*, std::unordered_map<int, std::any>* funkcijeZaPremikeIgralca, std::unordered_map<int, std::any>* funkcijeZaPremikePogleda*/){
-
-            // Del naslednje posodobitve.
-            //==================================================================================================
-            /*// Pregleda vse tipke.
-            for (int tipka=0; tipka<256; ++tipka){
-                SHORT stanjeTipke=GetAsyncKeyState(tipka);
-
-                // High-order bit, ki pove če je tipka stisnjena. Preveri tudi unordered-map za vrednost kljuca.
-                if (stanjeTipke&0x8000) {
-                    int asciiKoda=MapVirtualKey(tipka, MAPVK_VK_TO_CHAR);
-
-                    // Preveri ce obstaja.
-                    if (funkcijeZaPremikeIgralca->find(asciiKoda)!=funkcijeZaPremikeIgralca->end()){
-
-                    }
-                }
-        
-            }*/
-            //===================================================================================================
-            // Del naslednje posodobitve.
+        static void preverjanjeInputa(statusIgre::igra& status, std::vector<primitivi::objekt>& testT){
 
             // ESC
             if (GetAsyncKeyState(27)&0x8000){
                 status.statusIgre::igra::negirajStatus();
-            }/**/
+            }
             // W
             else if (GetAsyncKeyState(87)&0x8000){
-                //status.ySmerS(1.0f);
-                rasterizacija::transofrmacije::premik(testT, primitivi::tocka3D(0, -1, 0));
+                transformacije::premik::prem(testT, primitivi::tocka3D(0, -1, 0));
             }
             // S
             else if (GetAsyncKeyState(83)&0x8000){
-                //status.ySmerS(-1.0f);
-                rasterizacija::transofrmacije::premik(testT, primitivi::tocka3D(0, 1, 0));
+                transformacije::premik::prem(testT, primitivi::tocka3D(0, 1, 0));
             }
             // A
             else if (GetAsyncKeyState(65)&0x8000){
-                //status.xSmerS(1.0f);
-                rasterizacija::transofrmacije::premik(testT, primitivi::tocka3D(1, 0, 0));
+                transformacije::premik::prem(testT, primitivi::tocka3D(-1, 0, 0));
             }
             // D
             else if (GetAsyncKeyState(68)&0x8000){
-                //status.xSmerS(-1.0f);
-                rasterizacija::transofrmacije::premik(testT, primitivi::tocka3D(-1, 0, 0));
+                transformacije::premik::prem(testT, primitivi::tocka3D(1, 0, 0));
             }
             // T
             else if (GetAsyncKeyState(84)&0x8000){
-                //status.zSmerS(1.0f);
-                rasterizacija::transofrmacije::premik(testT, primitivi::tocka3D(0, 0, -0.01));
+                transformacije::premik::prem(testT, primitivi::tocka3D(0, 0, -2));
             }
             // R
             else if (GetAsyncKeyState(82)&0x8000){
-                //status.zSmerS(-1.0f);
-                rasterizacija::transofrmacije::premik(testT, primitivi::tocka3D(0, 0, 0.01));
-            }/*
-            // E
-            else if(GetAsyncKeyState(69)&0x8000){
-                status.zSmerS(0.01f);
+                transformacije::premik::prem(testT, primitivi::tocka3D(0, 0, 2));
             }
-            // Q
-            else if(GetAsyncKeyState(81)&0x8000){
-                status.zSmerS(-0.01f);
-            }*/
         }
     };
 }
 
 namespace nalagalnik{
     class nalaganjeTock{
-    public:
-        static primitivi::model naloziOBB(const std::string& pot){
+        public:
+            static primitivi::objekt naloziOBJ(const std::string& pot){
 
-            std::ifstream obj_datoteka(pot);
-            std::string vrstica;
+                std::ifstream obj_datoteka(pot);
+                std::string vrstica;
 
-            // Inicializirani arraji primitiv.
-            primitivi::vektorTock3D vektorTock;
-            primitivi::model ploskve;
+                // Inicializirani arraji primitiv.
+                primitivi::vektorTock3D vektorTock;
+                primitivi::objekt objekt;
 
-            while (std::getline(obj_datoteka, vrstica)){
-                std::istringstream iss(vrstica);
-                std::string tip_podatka;
-                iss >> tip_podatka;
+                while (std::getline(obj_datoteka, vrstica)){
+                    std::istringstream iss(vrstica);
+                    std::string tip_podatka;
 
-                // Shranjuje vertexe.
-                if (tip_podatka=="v"){
-                    float x, y, z;
-                    iss >> x >> y >> z;
-                    vektorTock+=primitivi::tocka3D(10.0f*x, 10.0f*y, z+0.9f);
-                }
+                    // Pridobi prvi znak v vrstici.
+                    iss >> tip_podatka;
 
-                // Shranjuje ploskve. 
-                else if (tip_podatka=="f"){
+                    // "If" hranjuje točke, "else if" pa ploskve.
+                    if (tip_podatka=="v"){
+                        float x, y, z;
+                        iss >> x >> y >> z;
 
-                    std::string zeton;
-                    primitivi::vektorTock3D ploskev;
+                        // Množenje dodano samo zato ker se modeli še ne morejo transformirati popolnoma. Funkcija še bo dodana.
+                        vektorTock+=primitivi::tocka3D(100.0f*x, 100.0f*y, 100.0f*z);
+                    } else if (tip_podatka=="f"){
 
-                    while (iss >> zeton) {
-                        size_t pos=zeton.find('/');
+                        std::string delStringa;
+                        primitivi::vektorTock3D ploskev;
 
-                        if (pos!=std::string::npos) {
-                            std::string numberStr=zeton.substr(0, pos);
+                        while (iss >> delStringa) {
 
-                            // Typecast v int.
-                            ploskev+=vektorTock[std::stoi(numberStr)-1];
+                            // Išče "/", ki ločuje številke.
+                            size_t pos=delStringa.find('/');
+                            
+                            // Dokler ni konec stringa.
+                            if (pos!=std::string::npos) {
+                                std::string numberStr=delStringa.substr(0, pos);
+
+                                // Typecast v int.
+                                ploskev+=vektorTock[std::stoi(numberStr)-1];
+                            }
                         }
-                    }
-                    ploskve+=ploskev;
-                }
-            }
 
-            return ploskve;
-        }
+                        // Objektu se doda ploskev.
+                        objekt+=ploskev;
+                    }
+                }
+
+                return objekt;
+            }
     };
 }

@@ -3,31 +3,30 @@
 #include <iostream>
 
 int main(){
-    int x_res=500;
-    int y_res=100;
+    int x_res=200;
+	int y_res=100;
     
-    statusIgre::igra status;
-    status.dolociResolucijo(x_res, y_res);
+    statusIgre::igra status(1, x_res, y_res, M_PI/6);
 
     renderanje::bufferArray buffer(x_res, y_res);
-    renderanje::zBufferArray zBuffer(x_res, y_res);
 
-    renderanje::projekcija::hardResetZaslon(status, buffer, zBuffer);
-    std::vector<primitivi::model> origMod;
-    std::vector<primitivi::model> temp;
+    renderanje::projekcija::hardResetZaslon(status, buffer);
+    std::vector<primitivi::objekt> origMod;
 
-    origMod.emplace_back(nalagalnik::nalaganjeTock::naloziOBB("C:\\Users\\user\\Desktop\\raster\\obj\\textures\\test.obj"));
+    origMod.emplace_back(nalagalnik::nalaganjeTock::naloziOBJ("C:\\Users\\marti\\Desktop\\raster\\obj\\wooden watch tower2.obj"));
 
-    while (status.pridobiStatus()){
+    while (status.status()){
 
-        renderanje::projekcija::pocistiZaslon(status, buffer, zBuffer);
+        renderanje::projekcija::pocistiZaslon(status, buffer);
         
         branjeInputa::input::preverjanjeInputa(status, origMod);
-        temp=origMod;
-        rasterizacija::transofrmacije::clip(origMod, status);
-        rasterizacija::transofrmacije::projekcijskaMat(temp);
 
-        renderanje::renderanjePrimitiv::renderObjektov(temp, buffer, zBuffer, status);
+        std::vector<primitivi::objekt> temp=transformacije::clippanje::clipLinij(origMod, status);
+        
+        transformacije::projekcijskaTransformacija::izracunProjekcije(temp, status);
+
+        renderanje::renderanjePrimitiv::renderObjektov(temp, buffer, status);
+
         puts(buffer.pridobiBuffer());
     }
    return 0;

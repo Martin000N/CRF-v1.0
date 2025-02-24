@@ -20,7 +20,7 @@ Trenutno se vsi modeli (tudi če obstaja samo en) naložijo v std::vector<primit
 
 1. V main funkciji se ustvarijo 3 objekti (statusIgre::igra status, renderanje::bufferArray buffer(x_res, y_res), std::vector<primitivi::objekt>), nato v zadnjega naloži vse modele na naslednji način:
 
-        "origMod.emplace_back(nalagalnik::nalaganjeTock::naloziOBJ("C:\\Users\\marti\\Desktop\\raster\\obj\\wooden watch tower2.obj"));"
+        "origMod.emplace_back(nalagalnik::nalaganjeTock::naloziOBJ("pot/do/primer.obj"));"
    
 2. Pred glavnim while loopom se še uporabi;
 
@@ -42,7 +42,7 @@ Trenutno se vsi modeli (tudi če obstaja samo en) naložijo v std::vector<primit
 
 4. Zadeva se kompilira sz naslednjo komando
 
-        "g++ -IPathToInclude example.cpp"
+        "g++ main.cpp"
 (ENG)
 This is a **single-header library**. If you want to try the example program, you can compile it with 
 

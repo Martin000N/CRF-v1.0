@@ -1,4 +1,5 @@
 (SLO)
+**(KODA NI OPTIMALNO NAPISANA, VELIKO ZADEV JE HARDCODANIH IN NASPLOH NI NAMENJENA RESNI UPORABI)**
 CRF (CPU Rendering Framework) KNJIZNICA V C++. Deluje le single-threaded in je **single-header library**.
 **Delujoče funkcije:**
 
